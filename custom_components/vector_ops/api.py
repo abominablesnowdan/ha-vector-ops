@@ -38,6 +38,9 @@ class VectorOpsApi:
     async def async_queue(self, item_id: str, start: bool) -> dict[str, Any]:
         return await self._request("POST", "/api/action/update-batch", {"items": [item_id], "interval_minutes": 0, "start": start})
 
+    async def async_batch(self, item_ids: list[str], interval_minutes: int) -> dict[str, Any]:
+        return await self._request("POST", "/api/action/update-batch", {"items": item_ids, "interval_minutes": interval_minutes})
+
     async def async_run_pending(self) -> dict[str, Any]:
         return await self._request("POST", "/api/action/resume-queue", {})
 

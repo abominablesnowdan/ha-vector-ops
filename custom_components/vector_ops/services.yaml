@@ -13,5 +13,20 @@ update_now:
       example: "apollo:prowlarr"
       selector:
         text:
+update_batch:
+  fields:
+    item_ids:
+      required: true
+      selector:
+        object:
+    interval_minutes:
+      required: false
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: slider
+          unit_of_measurement: minutes
 run_pending:
 clear_queue:

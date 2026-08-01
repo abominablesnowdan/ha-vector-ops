@@ -13,6 +13,10 @@ from .const import DOMAIN, PLATFORMS
 from .coordinator import VectorOpsCoordinator
 
 ITEM_SCHEMA = vol.Schema({vol.Required("item_id"): cv.string})
+BATCH_SCHEMA = vol.Schema({
+    vol.Required("item_ids"): vol.All(cv.ensure_list, [cv.string], vol.Length(min=1)),
+    vol.Optional("interval_minutes", default=10): vol.All(vol.Coerce(int), vol.Range(min=0, max=60)),
+})
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -31,7 +35,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
         if not hass.data[DOMAIN]:
-            for service in ("refresh_updates", "add_to_queue", "update_now", "run_pending", "clear_queue"):
+            for service in ("refresh_updates", "add_to_queue", "update_now", "update_batch", "run_pending", "clear_queue"):
                 hass.services.async_remove(DOMAIN, service)
     return ok
 
@@ -52,6 +56,8 @@ def _register_services(hass: HomeAssistant) -> None:
                 await coord.api.async_queue(call.data["item_id"], False)
             elif call.service == "update_now":
                 await coord.api.async_queue(call.data["item_id"], True)
+            elif call.service == "update_batch":
+                await coord.api.async_batch(call.data["item_ids"], call.data["interval_minutes"])
             elif call.service == "run_pending":
                 await coord.api.async_run_pending()
             elif call.service == "clear_queue":
@@ -63,5 +69,6 @@ def _register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "refresh_updates", invoke)
     hass.services.async_register(DOMAIN, "add_to_queue", invoke, schema=ITEM_SCHEMA)
     hass.services.async_register(DOMAIN, "update_now", invoke, schema=ITEM_SCHEMA)
+    hass.services.async_register(DOMAIN, "update_batch", invoke, schema=BATCH_SCHEMA)
     hass.services.async_register(DOMAIN, "run_pending", invoke)
     hass.services.async_register(DOMAIN, "clear_queue", invoke)
