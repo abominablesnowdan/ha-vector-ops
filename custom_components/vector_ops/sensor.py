@@ -74,18 +74,49 @@ class VectorHealthSensor(VectorSensor):
 
     @property
     def extra_state_attributes(self):
-        overview = self.coordinator.data.get("overview", {}); summary = overview.get("summary", {})
-        return {"services_ok": summary.get("services_ok", 0), "services_total": summary.get("services_total", 0), "problems": summary.get("problems", 0), "routes": overview.get("routes", [])}
+        overview = self.coordinator.data.get("overview", {})
+        summary = overview.get("summary", {})
+        return {
+            "services_ok": summary.get("services_ok", 0),
+            "services_total": summary.get("services_total", 0),
+            "problems": summary.get("problems", 0),
+            "routes": overview.get("routes", []),
+            "generated_at": overview.get("generated_at"),
+        }
 
 
 class VectorInfrastructureSensor(VectorSensor):
     def __init__(self, coordinator): super().__init__(coordinator, "infrastructure", "Infrastructure", "mdi:server-network")
 
     @property
-    def native_value(self): return "healthy" if self.coordinator.data.get("overview", {}).get("infrastructure_uptime", {}).get("ok") else "attention"
+    def native_value(self):
+        overview = self.coordinator.data.get("overview", {})
+        uptime = overview.get("infrastructure_uptime", {})
+        hosts = (overview.get("mac", {}), overview.get("apollo", {}))
+        hosts_ok = all(host.get("ok", False) and all(item.get("ok", False) for item in host.get("items", [])) for host in hosts)
+        return "healthy" if uptime.get("ok") and hosts_ok else "attention"
+
+    @staticmethod
+    def _host_summary(name, host):
+        items = host.get("items", [])
+        abnormal = [{"name": item.get("name"), "status": item.get("status")} for item in items if not item.get("ok", False)]
+        return {"name": name, "ok": host.get("ok", False), "total": len(items), "abnormal": abnormal, "error": host.get("error")}
 
     @property
-    def extra_state_attributes(self): return {"items": self.coordinator.data.get("overview", {}).get("infrastructure_uptime", {}).get("items", [])}
+    def extra_state_attributes(self):
+        overview = self.coordinator.data.get("overview", {})
+        uptime = overview.get("uptime", {})
+        return {
+            "items": overview.get("infrastructure_uptime", {}).get("items", []),
+            "uptime_percent": uptime.get("percent"),
+            "uptime_ok": uptime.get("ok", False),
+            "uptime_concerns": uptime.get("concerns", []),
+            "hosts": [
+                self._host_summary("Mac mini", overview.get("mac", {})),
+                self._host_summary("Apollo", overview.get("apollo", {})),
+            ],
+            "hermes_ok": overview.get("hermes", {}).get("ok"),
+        }
 
 
 class VectorBackupSensor(VectorSensor):
