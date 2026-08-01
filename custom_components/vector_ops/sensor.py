@@ -12,7 +12,7 @@ from .coordinator import VectorOpsCoordinator
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([VectorUpdatesSensor(coordinator), VectorReviewSensor(coordinator), VectorQueueSensor(coordinator), VectorHealthSensor(coordinator), VectorInfrastructureSensor(coordinator), VectorBackupSensor(coordinator), VectorIncidentsSensor(coordinator)])
+    async_add_entities([VectorUpdatesSensor(coordinator), VectorReviewSensor(coordinator), VectorQueueSensor(coordinator), VectorHealthSensor(coordinator), VectorInfrastructureSensor(coordinator), VectorBackupSensor(coordinator), VectorIncidentsSensor(coordinator), VectorWeatherSensor(coordinator)])
 
 
 class VectorSensor(CoordinatorEntity[VectorOpsCoordinator], SensorEntity):
@@ -106,3 +106,15 @@ class VectorIncidentsSensor(VectorSensor):
 
     @property
     def extra_state_attributes(self): return {"items": self.coordinator.data.get("overview", {}).get("incidents", [])}
+
+
+class VectorWeatherSensor(VectorSensor):
+    def __init__(self, coordinator): super().__init__(coordinator, "weather", "Weather", "mdi:weather-partly-cloudy")
+
+    @property
+    def native_value(self): return self.coordinator.data.get("overview", {}).get("weather", {}).get("summary", "unknown")
+
+    @property
+    def extra_state_attributes(self):
+        weather = self.coordinator.data.get("overview", {}).get("weather", {})
+        return {"temperature": weather.get("temperature"), "feels_like": weather.get("feels"), "wind": weather.get("wind"), "precipitation": weather.get("precipitation"), "forecast": weather.get("days", [])}
