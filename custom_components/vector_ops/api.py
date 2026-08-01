@@ -29,6 +29,9 @@ class VectorOpsApi:
     async def async_snapshot(self) -> dict[str, Any]:
         return await self._request("GET", "/api/updates")
 
+    async def async_status(self) -> dict[str, Any]:
+        return await self._request("GET", "/api/status")
+
     async def async_refresh(self) -> dict[str, Any]:
         return await self._request("POST", "/api/updates/refresh", {})
 

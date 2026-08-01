@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -17,6 +18,8 @@ class VectorOpsCoordinator(DataUpdateCoordinator[dict]):
 
     async def _async_update_data(self) -> dict:
         try:
-            return await self.api.async_snapshot()
+            updates, overview = await asyncio.gather(self.api.async_snapshot(), self.api.async_status())
+            updates["overview"] = overview
+            return updates
         except VectorOpsApiError as err:
             raise UpdateFailed(str(err)) from err
