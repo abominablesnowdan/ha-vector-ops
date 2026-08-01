@@ -1,0 +1,7 @@
+{
+  "config": {
+    "step": {"user": {"title": "Connect to Vector Ops", "description": "Connect Home Assistant to the existing Vector Ops queue service.", "data": {"url": "Vector Ops URL"}}},
+    "error": {"cannot_connect": "Unable to reach Vector Ops", "unknown": "Unexpected error"},
+    "abort": {"already_configured": "Vector Ops is already configured"}
+  }
+}

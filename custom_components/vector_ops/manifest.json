@@ -1,0 +1,10 @@
+{
+  "domain": "vector_ops",
+  "name": "Vector Ops",
+  "codeowners": ["@abominablesnowdan"],
+  "config_flow": true,
+  "documentation": "https://github.com/abominablesnowdan/ha-vector-ops",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "0.1.0"
+}

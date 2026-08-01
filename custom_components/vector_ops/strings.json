@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Vector Ops",
+        "description": "Connect Home Assistant to the existing Vector Ops queue service.",
+        "data": {"url": "Vector Ops URL"}
+      }
+    },
+    "error": {"cannot_connect": "Unable to reach Vector Ops", "unknown": "Unexpected error"},
+    "abort": {"already_configured": "Vector Ops is already configured"}
+  },
+  "services": {
+    "refresh_updates": {"name": "Refresh updates", "description": "Refresh update inventory."},
+    "add_to_queue": {"name": "Add to queue", "description": "Add one update without starting it.", "fields": {"item_id": {"name": "Item ID", "required": true, "selector": {"text": {}}}}},
+    "update_now": {"name": "Update now", "description": "Add one update and start it.", "fields": {"item_id": {"name": "Item ID", "required": true, "selector": {"text": {}}}}},
+    "run_pending": {"name": "Run pending", "description": "Start all pending queue entries."},
+    "clear_queue": {"name": "Clear queue", "description": "Clear queue history and pending entries when no update is running."}
+  }
+}

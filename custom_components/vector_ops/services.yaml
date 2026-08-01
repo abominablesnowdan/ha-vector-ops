@@ -1,0 +1,17 @@
+refresh_updates:
+add_to_queue:
+  fields:
+    item_id:
+      required: true
+      example: "apollo:prowlarr"
+      selector:
+        text:
+update_now:
+  fields:
+    item_id:
+      required: true
+      example: "apollo:prowlarr"
+      selector:
+        text:
+run_pending:
+clear_queue:
