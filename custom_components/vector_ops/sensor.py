@@ -38,7 +38,7 @@ class VectorUpdatesSensor(VectorSensor):
         data = self.coordinator.data.get("data", {})
         items = [dict(x, kind="container") for x in data.get("containers", [])]
         items += [dict(x, id="ha:" + x.get("entity_id", ""), kind="homeassistant", approved=True, service_key=x.get("service_key", "homeassistant")) for x in data.get("homeassistant", {}).get("items", [])]
-        return {"items": items, "generated_at": data.get("generated_at"), "scanning": self.coordinator.data.get("scanning", False), "backend_url": self.coordinator.api.base_url}
+        return {"items": items, "generated_at": data.get("generated_at"), "scanning": self.coordinator.data.get("scanning", False), "backend_url": self.coordinator.api.base_url, "partial_errors": self.coordinator.data.get("_errors", {}), "coordinator_updated_at": self.coordinator.data.get("_updated_at")}
 
 
 class VectorReviewSensor(VectorSensor):
@@ -82,6 +82,8 @@ class VectorHealthSensor(VectorSensor):
             "problems": summary.get("problems", 0),
             "routes": overview.get("routes", []),
             "generated_at": overview.get("generated_at"),
+            "partial_errors": self.coordinator.data.get("_errors", {}),
+            "coordinator_updated_at": self.coordinator.data.get("_updated_at"),
         }
 
 

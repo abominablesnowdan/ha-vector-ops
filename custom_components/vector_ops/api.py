@@ -18,8 +18,10 @@ class VectorOpsApi:
         try:
             async with self._session.request(method, self.base_url + path, json=payload, timeout=20) as response:
                 data = await response.json(content_type=None)
+                if not isinstance(data, dict):
+                    raise VectorOpsApiError(f"Vector Ops returned an invalid object from {path}")
                 if response.status >= 400:
-                    raise VectorOpsApiError(data.get("message") or f"Vector Ops returned HTTP {response.status}")
+                    raise VectorOpsApiError(data.get("message") or f"Vector Ops returned HTTP {response.status} from {path}")
                 return data
         except VectorOpsApiError:
             raise
