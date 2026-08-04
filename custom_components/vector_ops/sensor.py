@@ -100,9 +100,18 @@ class VectorInfrastructureSensor(VectorSensor):
 
     @staticmethod
     def _host_summary(name, host):
-        items = host.get("items", [])
+        items = host.get("items", [])[:50]
+        containers = [
+            {
+                "name": item.get("name"),
+                "status": item.get("status"),
+                "ok": item.get("ok", False),
+                "service_key": item.get("service_key", "service"),
+            }
+            for item in items
+        ]
         abnormal = [{"name": item.get("name"), "status": item.get("status")} for item in items if not item.get("ok", False)]
-        return {"name": name, "ok": host.get("ok", False), "total": len(items), "abnormal": abnormal, "error": host.get("error")}
+        return {"name": name, "ok": host.get("ok", False), "total": len(host.get("items", [])), "containers": containers, "abnormal": abnormal, "error": host.get("error")}
 
     @property
     def extra_state_attributes(self):
