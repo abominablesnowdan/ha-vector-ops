@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import voluptuous as vol
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_URL
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -20,6 +23,15 @@ BATCH_SCHEMA = vol.Schema({
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if not hass.data.get(DOMAIN, {}).get("static_paths_registered"):
+        await hass.http.async_register_static_paths([
+            StaticPathConfig(
+                "/vector_ops_static/icons",
+                str(Path(__file__).parent / "icons"),
+                cache_headers=True,
+            )
+        ])
+        hass.data.setdefault(DOMAIN, {})["static_paths_registered"] = True
     api = VectorOpsApi(async_get_clientsession(hass), entry.data[CONF_URL])
     coordinator = VectorOpsCoordinator(hass, entry, api)
     await coordinator.async_config_entry_first_refresh()
@@ -34,7 +46,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-        if not hass.data[DOMAIN]:
+        if not [key for key in hass.data[DOMAIN] if key != "static_paths_registered"]:
             for service in ("refresh_updates", "add_to_queue", "update_now", "update_batch", "run_pending", "clear_queue"):
                 hass.services.async_remove(DOMAIN, service)
     return ok
@@ -42,7 +54,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 def _register_services(hass: HomeAssistant) -> None:
     def coordinator() -> VectorOpsCoordinator:
-        entries = list(hass.data.get(DOMAIN, {}).values())
+        entries = [value for value in hass.data.get(DOMAIN, {}).values() if isinstance(value, VectorOpsCoordinator)]
         if not entries:
             raise HomeAssistantError("Vector Ops is not configured")
         return entries[0]

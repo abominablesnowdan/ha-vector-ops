@@ -16,3 +16,11 @@ def test_expected_service_contracts_exist():
     text = (ROOT / "custom_components/vector_ops/__init__.py").read_text()
     for service in ("refresh_updates", "add_to_queue", "update_now", "run_pending", "clear_queue"):
         assert service in text
+
+
+def test_same_origin_icon_contract():
+    text = (ROOT / "custom_components/vector_ops/__init__.py").read_text()
+    assert '"/vector_ops_static/icons"' in text
+    icons = ROOT / "custom_components/vector_ops/icons"
+    assert (icons / "service.svg").is_file()
+    assert len(list(icons.glob("*.svg"))) == 27
